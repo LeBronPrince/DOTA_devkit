@@ -9,16 +9,18 @@ import math
 """
     some basic functions which are useful for process DOTA data
 """
-
+'''
 wordname_15 = ['plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',
                'basketball-court', 'storage-tank',  'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool', 'helicopter']
-
+'''
+wordname_15 = ['plane', 'ship', 'harbor', 'bridge' ,'storage-tank']
 def custombasename(fullname):
     return os.path.basename(os.path.splitext(fullname)[0])
 
 def GetFileFromThisRootDir(dir,ext = None):
   allfiles = []
   needExtFilter = (ext != None)
+
   for root,dirs,files in os.walk(dir):
     for filespath in files:
       filepath = os.path.join(root, filespath)
@@ -76,10 +78,10 @@ def parse_dota_poly(filename):
                 object_struct['difficult'] = splitlines[9]
                 # else:
                 #     object_struct['difficult'] = 0
-            object_struct['poly'] = [(float(splitlines[0]), float(splitlines[1])),
-                                     (float(splitlines[2]), float(splitlines[3])),
-                                     (float(splitlines[4]), float(splitlines[5])),
-                                     (float(splitlines[6]), float(splitlines[7]))
+            object_struct['poly'] = [(float(splitlines[0]), float(splitlines[1])), # up left
+                                     (float(splitlines[2]), float(splitlines[3])), # down left
+                                     (float(splitlines[4]), float(splitlines[5])), # down right
+                                     (float(splitlines[6]), float(splitlines[7]))  # up right
                                      ]
             gtpoly = shgeo.Polygon(object_struct['poly'])
             object_struct['area'] = gtpoly.area

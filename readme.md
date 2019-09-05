@@ -1,68 +1,53 @@
+1. sudo ./install.sh
+    进行相关编译。python3.5 和 3.7 我都试过未出现编译错误。如果编译出错，可以放弃编译。单独切图不太需要这个编译。
 
-## Update
+2. 安装相应未安装的库。
 
+3. 切割思路：
+    (1) 将xml标签格式转为 DOTA 数据集的txt标签格式（程序是根据Dota官方的程序改的）。
+    (2) 将图片和相应生产的 txt 文件进行切割。
+    (3) 再将切割后的 txt 格式标签转为为VOC格式的XML标签。
+    (4) 将VOC格式的XML便签转化为 YOLO 格式的标签。  (程序未实现)
+    注：只实现了(1),(2),(3)步骤。
 
-<p>
-    We now add the cpu multi process version of "ImgSplit" and "ResultMerge", gpu version of polygon nms.
-</p>
+4. 程序的使用：
+    (1) 3(1) 对应程序 xml2txt.py:
+        需要更改的参数:
+            xml_path: xml标签保存的文件夹
+            txt_path: txt标签保存的文件夹
+        结果：在 txt_path 文件夹生产 TXT 标签
 
-## Functions
+    (2) 3(2) 对应程序 split_main1.py
+        需要更改参数：
+            src_image_path： 原始大图存储路径
+            src_label_path： TXT 标签的路径
+            dst_image_path： 切割成的小图要存储的路径
+            dst_label_path： 切割成的 TXT 标签存储路径
+            gap ：重叠尺寸
+            subsize ：子图大小
+            thresh ：如果一个标签被切割，那么当切割比例大于 thresh 的时候，才保存； 否则舍弃。
+            ext ：图片扩展名字 png
+            index : 代表数据是第几条数据。因为8条数据里的图片名字都是 Result_xxx.png，
+                    为了防止将八条数据拷贝到一起的时候，出现覆盖错误，把index加入文件名字中。
 
-The code is useful for <a href="http://captain.whu.edu.cn/DOTAweb/">DOTA<a> or
-<a href="http://captain.whu.edu.cn/ODAI/">ODAI<a>. The code provide the following function
-<ul>
-    <li>
-        Load and image, and show the bounding box on it.
-    </li>
-    <li>
-        Evaluate the result.
-    </li>
-    <li>
-        Split and merge the picture and label.
-    </li>
-</ul>
+    (3) 3(3) 对应程序 dota2voc.py
+        需要更改的参数：
+            images_path ：切割后小图的存储路径
+            labeltxt_path ：切割后TXT标签的存储路径
+            anno_new_path ：生产的 XML 保存路径。
+            ext ：图片的拓展名 (.png)。
 
-### What is DOTA?
-<p>
-Dota is a large-scale dataset for object detection in aerial images. 
-It can be used to develop and evaluate object detectors in aerial images. 
-We will continue to update DOTA, to grow in size and scope and to reflect evolving real-world conditions.
-Different from general object detectin dataset. Each instance of DOTA is labeled by an arbitrary (8 d.o.f.) quadrilateral.
-For the detail of <strong style="color:blue"> DOTA-v1.0</strong>, you can refer to our 
-<a href="https://arxiv.org/abs/1711.10398">paper</a>.
-</p>
+5. 使用步骤：
+    对于每条数据集，先运行 xml2txt.py； 再运行split_main1.py; 最后运行dota2voc.py
+    注意 更改步骤 4 步骤中介绍的相关文件路径和存储路径。
 
-### What is DOAI?
-
-[DOAI2019](https://captain-whu.github.io/DOAI2019) is a contest of Detecting Objects in Aerial Images on [CVPR'2019]("http://cvpr2019.thecvf.com/"). It is based on DOTA-v1.5.
-
-
-
-[DOAI2018](https://captain-whu.github.io/ODAI) is a contest of object detetion in aerial images on [ICPR'2018]("http://www.icpr2018.org/"). It is based on [DOTA-v1]("http://captain.whu.edu.cn/DOTAweb/"). The contest is closed now. 
-
-
-### Installation
-1. install swig
-```
-    sudo apt-get install swig
-```
-2. create the c++ extension for python
-```
-    swig -c++ -python polyiou.i
-    python setup.py build_ext --inplace
-```
-
-### Usage
-1. Reading and visualizing data, you can use DOTA.py
-2. Evaluating the result, you can refer to the "dota_evaluation_task1.py" and "dota_evaluation_task2.py" (or "dota-v1.5_evaluation_task1.py" and "dota-v1.5_evaluation_task2.py" for DOTA-v1.5)
-3. Split the large image, you can refer to the "ImgSplit"
-4. Merging the results detected on the patches, you can refer to the ResultMerge.py
-
-An example is shown in the demo.
-The subdirectory of "basepath"(which is used in "DOTA.py", "ImgSplit.py") is in the structure of
-```
-.
-├── images
-└── labelTxt
-```
-
+6. 聚合版本：
+    split_main_merge_all.py包括了所有三个步骤
+    需要更改的参数：
+        xml_path ：XML标签保存的文件夹txt_path
+        txt_path ：生成的TXT标签保存的文件夹 (未进行切割)
+        src_image_path ：原始图片文件夹
+        ***dst_image_path ：切割后子图片保存文件夹***
+        dst_label_path ：切割后标签文件TXT标签保存文件夹
+        ***anno_new_path ： 切割后TXT标签转化的VOC格式的XML文件保存文件夹***
+    注 ：通过整体迭代实现一次性切割。
